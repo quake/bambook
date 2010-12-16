@@ -23,6 +23,12 @@ class BooksController < ApplicationController
     end
   end
 
+  def destroy
+    book = Book.find(params[:id])
+    book.destroy if book.user == @user
+    render :nothing => true
+  end
+
   private
   def find_user
     @user = User.find_or_initialize_by_device_sn(params[:sn])
