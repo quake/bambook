@@ -2,3 +2,5 @@
 /tmp/*
 /nbproject/*
 **.orig
+/db/schema.rb
+/public/upload/books/*
