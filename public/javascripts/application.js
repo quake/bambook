@@ -56,7 +56,8 @@ function hideMessage() {
 addEvent('privbooktrans', function(state, progress, userdata){
     $("#message").html("和Bambook通讯中: " + progress + " / 100");
     if(state == 1) {
-        refreshBambookBooks();
+        setTimeout(refreshBambookBooks, 1000);
+        setTimeout(refreshServerBooks, 1000);
     }
 });
 
