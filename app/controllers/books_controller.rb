@@ -10,7 +10,7 @@ class BooksController < ApplicationController
   def show
     book = Book.find(params[:id])
     if book.share? || book.user == @user
-      redirect_to "/upload/books/#{book.user.device_sn}/#{book.id}"
+      redirect_to "/upload/books/#{book.user.device_sn}/#{book.id}?t=#{Time.now.to_i}"
     else
       render :nothing => true, :status => 404
     end

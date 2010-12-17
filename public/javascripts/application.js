@@ -125,3 +125,7 @@ $(window).unload(function() {
     bb.disconnect();
 });
 
+$.ajaxSetup({
+    cache: false
+});
+
