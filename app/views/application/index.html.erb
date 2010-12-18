@@ -1,25 +1,52 @@
 <object id="bambookplugin" type="application/x-bambookplugin" width="0" height="0">
 </object>
-<div>
-  <input type="button" id="btn_connect" value="连接Bambook"/>  <input type="text" id="bambook_ip" value="192.168.250.2"/>
+
+<div id="box">
+  <div class="block">
+    <h2>连接到Bambook</h2>
+    <div class="content">
+      <form action="#" class="form">
+        <div class="group wat-cf">
+          <div class="left">
+            <label class="label">IP</label>
+          </div>
+          <div class="right">
+            <input type="text" class="text_field" id="bambook_ip" value="192.168.250.2"/>
+            <span class="description">提示: 如果您使用USB连接, 192.168.250.2就是默认IP</span>
+          </div>
+        </div>
+
+        <div class="group navform wat-cf">
+          <div class="right">
+            <button class="button" type="submit" id="btn_connect">
+              <%= image_tag("icons/tick.png", :alt => "connect") %> 连接
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
-<table style="float: left;" width="50%">
-  <thead>
-    <tr>
-      <td colspan="3">Bambook上的自有书籍</td>
-    </tr>
-  </thead>
-  <tbody id="bambook_books"></tbody>
-</table>
+<div id="bambook_books" class="block" style="display:none;">
+  <div class="content">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>书名</th>
+          <th>作者</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
 
-<table style="float: left;" width="50%" class="sortable">
-  <thead>
-    <tr>
-      <td colspan="3">我上传的自有书籍</td>
-    </tr>
-  </thead>
-  <tbody id="server_books"></tbody>
-</table>
+<div id="server_books" class="block" style="display:none;">
 
-<div id="message" style="display:none;"></div>
+</div>
+
+<div id="message" style="display:none;">
+  <p><%= image_tag "icons/ajax_loader.gif" %> <span></span></p>
+</div>

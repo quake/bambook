@@ -3,8 +3,8 @@ class CreateBooks < ActiveRecord::Migration
     create_table :books do |t|
       t.string :name, :author, :guid
       t.integer :user_id
-      t.boolean :share, :default => true
-      t.integer :download_count, :default => 0
+      t.boolean :share, :default => false
+      t.integer :size
       t.timestamps
     end
 

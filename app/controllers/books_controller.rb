@@ -2,25 +2,25 @@ class BooksController < ApplicationController
   before_filter :find_user
 
   def create
-    book = @user.books.create!(:guid => params[:guid], :name => params[:name], :author => params[:author])
+    book = @user.books.create!(:guid => params[:guid], :name => params[:name], :author => params[:author], :size => params[:data].size)
     File.open("#{RAILS_ROOT}/public/upload/books/#{@user.device_sn}/#{book.id}", 'w') {|f| f.write params[:data] }
     render :nothing => true
   end
 
   def show
-    book = Book.find(params[:id])
-    if book.share? || book.user == @user
-      redirect_to "/upload/books/#{book.user.device_sn}/#{book.id}?t=#{Time.now.to_i}"
-    else
-      render :nothing => true, :status => 404
-    end
+    book = @user.books.find(params[:id])
+    redirect_to "/upload/books/#{book.user.device_sn}/#{book.id}?t=#{Time.now.to_i}"
   end
 
   def index
-    books = @user.books
-    respond_to do |format|
-      format.json {render :json => books.to_json(:only => [:id, :name, :author, :share])}
-    end
+    @books = @user.books.paginate(:page => params[:page])
+    render :action => :index, :layout => false
+  end
+
+  def update
+    book = Book.find(params[:id])
+    book.toggle!(:share) if book.user == @user
+    render :nothing => true
   end
 
   def destroy

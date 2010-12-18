@@ -1,14 +1,66 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" dir="ltr">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Bambook</title>
+    <%= stylesheet_link_tag "base", "override" %>
+    <%= stylesheet_link_tag "themes/default/style", :id => "current-theme"  %>
     <script type="text/javascript" src="http://ajax.microsoft.com/ajax/jquery/jquery-1.4.4.min.js"></script>
     <script type="text/javascript" src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"></script>
     <%= javascript_include_tag "jquery.blockUI.js" %>
   </head>
   <body>
-    <%= yield %>
+    <div id="container">
+      <div id="header">
+        <h1><a href="/">Bambook</a></h1>
+        <div id="user-navigation">
+          <ul class="wat-cf">
+            <li><a href="#">帮助</a></li>
+            <li><a href="#">关于</a></li>
+            <li><a href="/logout" class="logout">退出</a></li>
+          </ul>
+        </div>
+        <div id="main-navigation">
+          <ul class="wat-cf">
+            <li class="first"><a href="#" id="my_server_books">我上传的书籍</a></li>
+            <li class="active"><a href="#" id="my_bambook_books">我的Bambook</a></li>
+            <li><a href="#" id="other_shares">他人共享的书籍</a></li>
+            <li><a href="#" id="subscription">订阅书籍</a></li>
+          </ul>
+        </div>
+      </div>
+      <div id="wrapper" class="wat-cf">
+        <div id="main">
+          <%= yield %>
+        </div>
+        <div id="sidebar">
+          <div class="block">
+            <h3>换个样式，换个心情</h3>
+            <ul class="navigation">
+              <li><a href="#" onclick="Theme.activate('default'); return false;">Default</a></li>
+              <li><a href="#" onclick="Theme.activate('red'); return false;">Red</a></li>
+              <li><a href="#" onclick="Theme.activate('amro'); return false;">Amro</a></li>
+              <li><a href="#" onclick="Theme.activate('bec'); return false;">Bec</a></li>
+              <li><a href="#" onclick="Theme.activate('bec-green'); return false;">Bec-Green</a></li>
+              <li><a href="#" onclick="Theme.activate('blue'); return false;">Blue</a></li>
+              <li><a href="#" onclick="Theme.activate('djime-cerulean'); return false;">Djime-Cerulean</a></li>
+              <li><a href="#" onclick="Theme.activate('drastic-dark'); return false;">Drastic Dark</a></li>
+              <li><a href="#" onclick="Theme.activate('kathleene'); return false;">Kathleene</a></li>
+              <li><a href="#" onclick="Theme.activate('olive'); return false;">Olive</a></li>
+              <li><a href="#" onclick="Theme.activate('orange'); return false;">Orange</a></li>
+              <li><a href="#" onclick="Theme.activate('reidb-greenish'); return false;">Greenish</a></li>
+              <li><a href="#" onclick="Theme.activate('warehouse'); return false;">Warehouse</a></li>
+            </ul>
+          </div>
+        </div>
+        <div id="footer" class="clear">
+          <div class="block">
+            <p>Copyright &copy; <%= Time.now.year %> http://bambook.cnprog.com</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <%= javascript_include_tag "application.js" %>
   </body>
 </html>
