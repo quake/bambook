@@ -95,6 +95,7 @@ $(function() {
     $("#btn_connect").click(function() {
         popupMessage("正在连接到Bambook")
         setTimeout(connect, 2000);
+        return false;
     });
 
     $("#bambook_books a.upload").live('click', function() {
