@@ -5,9 +5,7 @@
     <title>Bambook</title>
     <%= stylesheet_link_tag "base", "override" %>
     <%= stylesheet_link_tag "themes/default/style", :id => "current-theme"  %>
-    <script type="text/javascript" src="http://ajax.microsoft.com/ajax/jquery/jquery-1.4.4.min.js"></script>
-    <script type="text/javascript" src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"></script>
-    <%= javascript_include_tag "jquery.blockUI.js" %>
+    <%= javascript_include_tag "jquery.min.js", "jquery.tmpl.min.js", "jquery.blockUI.js" %>
   </head>
   <body>
     <div id="container">
