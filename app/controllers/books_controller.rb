@@ -20,7 +20,7 @@ class BooksController < ApplicationController
   def update
     book = Book.find(params[:id])
     book.toggle!(:share) if book.user == @user
-    render :nothing => true
+    render :partial => "book", :object => book
   end
 
   def destroy

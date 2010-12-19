@@ -135,24 +135,24 @@ $(function() {
 
     $("#server_books a.delete").live('click', function() {
         if(confirm("你确定要在服务器上删除这本书吗？")) {
-            var sid = $(this).parent().parent().attr("sid");
-            $.post("/books/" + sid + "?sn=" + sn, {
+            var container = $(this).parent().parent();
+            $.post("/books/" + container.attr("sid") + "?sn=" + sn, {
                 "_method": "delete"
             },
             function(data) {
-                refreshServerBooks("/books");
+                container.remove();
             });
             return false;
         }
     });
 
     $("#server_books a.share").live('click', function() {
-        var sid = $(this).parent().parent().attr("sid");
-        $.post("/books/" + sid + "?sn=" + sn, {
+        var container = $(this).parent().parent();
+        $.post("/books/" + container.attr("sid") + "?sn=" + sn, {
             "_method": "put"
         },
         function(data) {
-            refreshServerBooks("/books");
+            container.replaceWith(data);
         });
         return false;
     });
