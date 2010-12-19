@@ -1,27 +1,36 @@
+<div class="secondary-navigation">
+  <ul class="wat-cf">
+    <li class="first<%= " active" unless params[:sort] == "time" %>"><a href="/share_books">下载最多</a></li>
+    <li<%= " class='active'" if params[:sort] == "time" %>><a href="/share_books?sort=time">最新共享</a></li>
+  </ul>
+</div>
+
 <div class="content">
-  <table class="table">
-    <thead>
-      <tr>
-        <th>书名</th>
-        <th>作者</th>
-        <th>下载次数</th>
-        <th>下载</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% for book in @books %>
-        <tr sid="<%= book.id %>">
-          <td><%= h book.name %></td>
-          <td><%= h book.author %></td>
-          <td><%= book.download_count %></td>
-          <td>
-            <a href='#' class='download-share'>下载</a>
-          </td>
+  <div class="inner">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>书名</th>
+          <th>作者</th>
+          <th>下载次数</th>
+          <th>下载</th>
         </tr>
-      <% end %>
-      <tr>
-        <td colspan="3"><%= will_paginate @books %></td>
-      </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        <% for book in @books %>
+          <tr sid="<%= book.id %>">
+            <td><%= h book.name %></td>
+            <td><%= h book.author %></td>
+            <td><%= book.download_count %></td>
+            <td>
+              <a href='#' class='download-share'>下载</a>
+            </td>
+          </tr>
+        <% end %>
+        <tr>
+          <td colspan="3"><%= will_paginate @books %></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>

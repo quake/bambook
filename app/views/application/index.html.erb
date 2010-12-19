@@ -1,7 +1,7 @@
 <object id="bambookplugin" type="application/x-bambookplugin" width="0" height="0">
 </object>
 
-<div id="box">
+<div id="box" style="display:none;">
   <div class="block">
     <h2>连接到Bambook</h2>
     <div class="content">
@@ -28,6 +28,15 @@
   </div>
 </div>
 
+<div id="install_plugin" class="block" style="display:none;">
+  <div class="content">
+    <h2 class="Title">提示</h2>
+    <div class="inner">
+      <p>您需要先安装Bambook浏览器插件，请通过盛大云梯下载该插件，安装插件之后请关闭浏览器重开，您就能够通过网页分享，下载和订阅各种书籍</p>
+    </div>
+  </div>
+</div>
+
 <div id="bambook_books" class="block" style="display:none;">
   <div class="content">
     <table class="table">
@@ -48,5 +57,5 @@
 </div>
 
 <div id="message" style="display:none;">
-  <p><%= image_tag "icons/ajax_loader.gif" %> <span></span></p>
+  <h4><%= image_tag "icons/ajax_loader.gif" %> <span></span></h4>
 </div>
