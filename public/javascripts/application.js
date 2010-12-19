@@ -1,6 +1,8 @@
+//TODO show progress with XMLHTTP upload/download if possible
 var bb = document.getElementById('bambookplugin');  
 var sn = "";
 var guid = "";
+var uploading = false;
 
 $.template("bambook_book_template", "<tr guid='${guid}'><td>${name}</td><td>${author}</td><td><a href='#' class='upload'>上传</a> <a href='#' class='delete'>删除</a></td></tr>");
 
@@ -53,7 +55,8 @@ function connect() {
 function addEvent(name, func) {
     if (window.addEventListener) {
         bb.addEventListener(name, func, false);
-    } else {
+    }
+    else {
         bb.attachEvent("on"+name, func);
     }
 }
@@ -70,15 +73,18 @@ function updateMessage(message) {
 }
 
 function hideMessage() {
-    setTimeout($.unblockUI, 1500);
+    setTimeout($.unblockUI, 1200);
 }
 
 addEvent('privbooktrans', function(state, progress, userdata){
     if(state == 0) {
         updateMessage("正在和Bambook传输: " + progress + " / 100");
     }else if(state == 1){
-        updateMessage("传输完成");
-        $.unblockUI();
+        //FIXME need refactor
+        if(!uploading){
+            updateMessage("传输完成");
+            hideMessage();
+        }
     }else if(state == 2) {
         updateMessage("传输失败, 请重试");
         hideMessage();
@@ -94,9 +100,10 @@ addEvent('privbooktransbyrawdata', function(data){
         name: book.children()[0].innerHTML,
         author: book.children()[1].innerHTML,
         data: data
-    }, function(data) {
+    }, function() {
         updateMessage("上传完毕");
         hideMessage();
+        uploading = false;
     });
 });
 
@@ -108,6 +115,8 @@ $(function() {
     });
 
     $("#bambook_books a.upload").live('click', function() {
+        //FIXME need refactor
+        uploading = true;
         guid = $(this).parent().parent().attr("guid");
         popupMessage("和Bambook通讯中: 0 / 100");
         bb.fetchPrivBookByRawData(guid);
@@ -153,7 +162,7 @@ $(function() {
             $.post("/books/" + container.attr("sid") + "?sn=" + sn, {
                 "_method": "delete"
             },
-            function(data) {
+            function() {
                 container.remove();
             });
             return false;
