@@ -171,9 +171,8 @@ $(function() {
                 case "other_shares":
                     refreshServerBooks("/share_books");
                     break;
-                case "subscription":
-                    popupMessage("你可以用这个功能来追天涯连载文章，看博客连载，即将推出，敬请期待");
-                    hideMessage();
+                case "subscriptions":
+                    refreshServerBooks("/subscriptions");
                     break;
                 default:
                     break;

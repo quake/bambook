@@ -3,4 +3,5 @@ ActionController::Routing::Routes.draw do |map|
 
   map.resources :books
   map.resources :share_books
+  map.resources :subscriptions
 end
