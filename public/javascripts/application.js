@@ -92,7 +92,7 @@ addEvent('privbooktrans', function(state, progress, userdata){
 });
 
 addEvent('privbooktransbyrawdata', function(data){
-    popupMessage("正在上传到服务器");
+    popupMessage("正在上传到服务器 (服务器带宽有限，需要较长时间上传，请耐心等待)");
     var book = $("tr[guid='" + guid + "']");
     $.post("/books", {
         sn: sn, 
