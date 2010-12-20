@@ -76,7 +76,7 @@ function connect() {
         $('#box').hide();
         refreshBambookBooks();
     }else{
-        $('#message').html("连接错误: " + result);
+        updateMessage("连接错误: " + result);
         hideMessage();
     }
 }
