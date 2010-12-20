@@ -167,6 +167,7 @@ $(function() {
             $.get("/share_books/" + sid,
                 function(data){
                     bb.addPrivBookByRawData("temp.snb", data);
+                    bambook_changed = true;
                 });
         }
         return false;
