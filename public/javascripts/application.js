@@ -50,8 +50,23 @@ function refreshServerBooks(url) {
     },
     function(data){
         $("#server_books").html(data);
+        filterServerBooks();
         hideMessage();
     });
+}
+
+function filterServerBooks() {
+    var guids = $("#bambook_books tr").map(function() {
+        return $(this).attr("guid")
+    });
+
+    $("#server_books tr").each(function() {
+        var guid = $(this).attr("guid");
+        if($.inArray(guid, guids) != -1) {
+            $("tr[guid='" + guid + "'] a.download").replaceWith("已有");
+            $("tr[guid='" + guid + "'] a.download-share").replaceWith("已有");
+        }
+    })
 }
 
 function connect() {
@@ -106,7 +121,7 @@ addEvent('privbooktrans', function(state, progress, userdata){
 });
 
 addEvent('privbooktransbyrawdata', function(data){
-    popupMessage("正在上传到服务器 (服务器带宽有限，需要较长时间上传，请耐心等待)");
+    popupMessage("正在上传到服务器 (服务器带宽有限，需要较长时间，请耐心等待)");
     var book = $("tr[guid='" + guid + "']");
     $.post("/books", {
         sn: sn, 
@@ -147,11 +162,12 @@ $(function() {
     });
 
     $("#server_books a.download").live('click', function() {
-        popupMessage("正在从服务器下载");
-        var sid = $(this).parent().parent().attr("sid");
-        $.get("/books/" + sid + "?sn=" + sn,
+        popupMessage("正在从服务器下载 (服务器带宽有限，需要较长时间，请耐心等待)");
+        var tr = $(this).parent().parent();
+        $.get("/books/" + tr.attr("sid") + "?sn=" + sn,
             function(data){
-                bb.addPrivBookByRawData("temp.snb", data);
+                bb.replacePrivBookByRawData(tr.attr("guid"), data);
+                $("tr[guid='" + tr.attr("guid") + "'] a.download").replaceWith("已有");
                 bambook_changed = true;
             });
         return false;
@@ -162,11 +178,12 @@ $(function() {
             popupMessage("您需要先连接到Bambook才能下载");
             hideMessage();
         }else{
-            popupMessage("正在从服务器下载");
-            var sid = $(this).parent().parent().attr("sid");
-            $.get("/share_books/" + sid,
+            popupMessage("正在从服务器下载 (服务器带宽有限，需要较长时间，请耐心等待)");
+            var tr = $(this).parent().parent();
+            $.get("/share_books/" + tr.attr("sid"),
                 function(data){
-                    bb.addPrivBookByRawData("temp.snb", data);
+                    bb.replacePrivBookByRawData(tr.attr("guid"), data);
+                    $("tr[guid='" + tr.attr("guid") + "'] a.download-share").replaceWith("已有");
                     bambook_changed = true;
                 });
         }
@@ -181,6 +198,7 @@ $(function() {
             },
             function() {
                 container.remove();
+                bambook_changed = true;
             });
             return false;
         }
@@ -193,6 +211,7 @@ $(function() {
         },
         function(data) {
             container.replaceWith(data);
+            filterServerBooks();
         });
         return false;
     });
