@@ -23,7 +23,6 @@ function refreshBambookBooks() {
                     }).get().join(",")
                 }, function(data) {
                     var uploaded_guids = data.split(",")
-                    console.log(uploaded_guids);
                     $(bambook_books).each(function() {
                         this["uploaded"] = ($.inArray(this["guid"], uploaded_guids) != -1);
                     });
