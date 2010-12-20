@@ -9,7 +9,7 @@ $.template("bambook_book_template", "<tr guid='${guid}'><td>${name}</td><td>${au
 
 function refreshBambookBooks() {
     $('#server_books').hide();
-    if(bb.valid) {
+    if(bb.valid && bb.version == "1.0.1") {
         if(bb.getConnectStatus() == 0) {
             $('#bambook_books').show();
             if(bambook_changed) {
