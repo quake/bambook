@@ -5,7 +5,7 @@ var guid = "";
 var uploading = false;
 var bambook_changed = true;
 
-$.template("bambook_book_template", "<tr guid='${guid}'><td>${name}</td><td>${author}</td><td>{{if uploaded}}<a href='#' class='upload'>上传</a>{{else}}已上传{{/if}} <a href='#' class='delete'>删除</a></td></tr>");
+$.template("bambook_book_template", "<tr guid='${guid}'><td>${name}</td><td>${author}</td><td>{{if uploaded}}已上传{{else}}<a href='#' class='upload'>上传</a>{{/if}} <a href='#' class='delete'>删除</a></td></tr>");
 
 function refreshBambookBooks() {
     $('#server_books').hide();
@@ -23,8 +23,9 @@ function refreshBambookBooks() {
                     }).get().join(",")
                 }, function(data) {
                     var uploaded_guids = data.split(",")
+                    console.log(uploaded_guids);
                     $(bambook_books).each(function() {
-                        this["uploaded"] = $.inArray(this["guid"], uploaded_guids);
+                        this["uploaded"] = ($.inArray(this["guid"], uploaded_guids) != -1);
                     });
                     $("#bambook_books tbody").html($.tmpl("bambook_book_template", bambook_books));
                     bambook_changed = false;
