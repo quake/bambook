@@ -7,6 +7,11 @@ class BooksController < ApplicationController
     render :nothing => true
   end
 
+  def uploaded
+    books = @user.books.find_all_by_guid(params[:guid].split(/,/))
+    render :inline => books.map(&:guid).join(",")
+  end
+
   def show
     book = @user.books.find(params[:id])
     redirect_to "/upload/books/#{book.user.device_sn}/#{book.id}?t=#{Time.now.to_i}"

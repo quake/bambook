@@ -3,20 +3,34 @@ var bb = document.getElementById('bambookplugin');
 var sn = "";
 var guid = "";
 var uploading = false;
+var bambook_changed = true;
 
-$.template("bambook_book_template", "<tr guid='${guid}'><td>${name}</td><td>${author}</td><td><a href='#' class='upload'>上传</a> <a href='#' class='delete'>删除</a></td></tr>");
+$.template("bambook_book_template", "<tr guid='${guid}'><td>${name}</td><td>${author}</td><td>{{if uploaded}}<a href='#' class='upload'>上传</a>{{else}}已上传{{/if}} <a href='#' class='delete'>删除</a></td></tr>");
 
 function refreshBambookBooks() {
     $('#server_books').hide();
     if(bb.valid) {
         if(bb.getConnectStatus() == 0) {
             $('#bambook_books').show();
-            popupMessage("正在获取Bambook上的自有书籍信息");
+            if(bambook_changed) {
+                popupMessage("正在获取Bambook上的自有书籍信息");
 
-            var bambook_books = $("#bambook_books tbody")
-            bambook_books.empty();
-            $.tmpl("bambook_book_template", bb.getPrivBookInfos()).appendTo(bambook_books);
-            hideMessage();
+                var bambook_books = bb.getPrivBookInfos();
+                $.get("/books/uploaded", {
+                    sn: sn,
+                    guid: $(bambook_books).map(function(){
+                        return this["guid"]
+                    }).get().join(",")
+                }, function(data) {
+                    var uploaded_guids = data.split(",")
+                    $(bambook_books).each(function() {
+                        this["uploaded"] = $.inArray(this["guid"], uploaded_guids);
+                    });
+                    $("#bambook_books tbody").html($.tmpl("bambook_book_template", bambook_books));
+                    bambook_changed = false;
+                    hideMessage();
+                })
+            }
         }else{
             $("#box").show();
         }
@@ -102,6 +116,7 @@ addEvent('privbooktransbyrawdata', function(data){
         data: data
     }, function() {
         updateMessage("上传完毕");
+        $("tr[guid='" + guid + "'] a.upload").replaceWith("已上传");
         hideMessage();
         uploading = false;
     });
@@ -126,7 +141,7 @@ $(function() {
     $("#bambook_books a.delete").live('click', function() {
         if(confirm("您确定要在Bambook上删除这本书吗？")) {
             bb.deletePrivBook($(this).parent().parent().attr("guid"));
-            refreshBambookBooks();
+            $(this).parent().parent().remove();
             return false;
         }
     });
@@ -137,6 +152,7 @@ $(function() {
         $.get("/books/" + sid + "?sn=" + sn,
             function(data){
                 bb.addPrivBookByRawData("temp.snb", data);
+                bambook_changed = true;
             });
         return false;
     });
