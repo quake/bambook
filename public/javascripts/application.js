@@ -9,7 +9,7 @@ $.template("bambook_book_template", "<tr guid='${guid}'><td>${name}</td><td>${au
 
 function refreshBambookBooks() {
     $('#server_books').hide();
-    if(bb.valid && bb.version == "1.0.1") {
+    if(bb.valid && bb.version == "1.0.5") {
         if(bb.getConnectStatus() == 0) {
             $('#bambook_books').show();
             if(bambook_changed) {
@@ -70,15 +70,16 @@ function filterServerBooks() {
 }
 
 function connect() {
-    var result = bb.connect($("#bambook_ip").val());
-    if(result == 0) {
-        sn = bb.getDeviceInfo()["sn"];
-        $('#box').hide();
-        refreshBambookBooks();
-    }else{
-        updateMessage("连接错误: " + result);
-        hideMessage();
-    }
+    bb.connect($("#bambook_ip").val(), function(plugin, result){
+        if(result == 0) {
+            sn = bb.getDeviceInfo()["sn"];
+            $('#box').hide();
+            refreshBambookBooks();
+        }else{
+            updateMessage("连接错误: " + bb.getErrorString(result));
+            hideMessage();
+        }
+    });
 }
 
 function addEvent(name, func) {
@@ -140,7 +141,7 @@ addEvent('privbooktransbyrawdata', function(data){
 $(function() {
     $("#btn_connect").click(function() {
         popupMessage("正在连接到Bambook")
-        setTimeout(connect, 2000);
+        connect();
         return false;
     });
 
