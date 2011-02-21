@@ -1,15 +1,16 @@
 //TODO show progress with XMLHTTP upload/download if possible
 var bb = document.getElementById('bambookplugin');  
 var sn = "";
-var guid = "";
-var uploading = false;
 var bambook_changed = true;
+var jobs = [];
+var currentJob = null;
 
 $.template("bambook_book_template", "<tr guid='${guid}'><td>${name}</td><td>${author}</td><td>{{if uploaded}}已上传{{else}}<a href='#' class='upload'>上传</a>{{/if}} <a href='#' class='delete'>删除</a></td></tr>");
+$.template("job_template", "<li><a href='#'>{{if upload}}上传{{else}}下载{{/if}} ${name}</a></li>");
 
 function refreshBambookBooks() {
     $('#server_books').hide();
-    if(bb.valid && bb.version == "1.0.5") {
+    if(bb.valid && bb.version >= "1.0.1") {
         if(bb.getConnectStatus() == 0) {
             $('#bambook_books').show();
             if(bambook_changed) {
@@ -28,7 +29,7 @@ function refreshBambookBooks() {
                     });
                     $("#bambook_books tbody").html($.tmpl("bambook_book_template", bambook_books));
                     bambook_changed = false;
-                    hideMessage();
+                    $.unblockUI();
                 })
             }
         }else{
@@ -51,7 +52,7 @@ function refreshServerBooks(url) {
     function(data){
         $("#server_books").html(data);
         filterServerBooks();
-        hideMessage();
+        $.unblockUI();
     });
 }
 
@@ -64,22 +65,33 @@ function filterServerBooks() {
         var guid = $(this).attr("guid");
         if($.inArray(guid, guids) != -1) {
             $("tr[guid='" + guid + "'] a.download").replaceWith("已有");
-            $("tr[guid='" + guid + "'] a.download-share").replaceWith("已有");
         }
     })
 }
 
 function connect() {
-    bb.connect($("#bambook_ip").val(), function(plugin, result){
+    if(bb.version >= "1.0.5") {
+        bb.connect($("#bambook_ip").val(), function(plugin, result){
+            if(result == 0) {
+                sn = bb.getDeviceInfo()["sn"];
+                $('#box').hide();
+                refreshBambookBooks();
+            }else{
+                updateMessage("连接错误: " + bb.getErrorString(result));
+                setTimeout($.unblockUI, 1200);
+            }
+        });
+    }else{
+        var result = bb.connect($("#bambook_ip").val());
         if(result == 0) {
             sn = bb.getDeviceInfo()["sn"];
             $('#box').hide();
             refreshBambookBooks();
         }else{
-            updateMessage("连接错误: " + bb.getErrorString(result));
+            updateMessage("连接错误: " + result);
             hideMessage();
         }
-    });
+    }
 }
 
 function addEvent(name, func) {
@@ -102,40 +114,67 @@ function updateMessage(message) {
     $('#message span').html(message);
 }
 
-function hideMessage() {
-    setTimeout($.unblockUI, 1200);
+function refreshJobs() {
+    if(jobs.length == 0) {
+        $("#jobs").html("<li><a href='#'>无等待处理的任务</a></li>");
+    }else{
+        $("#jobs").html($.tmpl("job_template", jobs));
+    }
+}
+
+function processJobs() {
+    if(jobs.length > 0 && currentJob == null) {
+        if(bb.getConnectStatus() != 0) {
+            $("#sidebar div:first h3").html("任务队列 请先连接您的Bambook");
+        }else{
+            currentJob = jobs.shift();
+            if(currentJob.upload) {
+                bb.fetchPrivBookByRawData(currentJob.guid);
+            }else{
+                $("#sidebar div:first h3").html("任务队列 正在下载 (服务器带宽有限，需要较长时间，请耐心等待) <img src='/images/icons/ajax_loader.gif'/>");
+                $.get((currentJob.share ? "/share_books/" : "/books/") + currentJob.sid + "?sn=" + sn,
+                    function(data){
+                        bb.replacePrivBookByRawData(currentJob.guid, data);
+                    });
+            }
+        }
+    }
 }
 
 addEvent('privbooktrans', function(state, progress, userdata){
+    var message;
     if(state == 0) {
-        updateMessage("正在和Bambook传输: " + progress + " / 100");
+        message = "正在和Bambook传输: " + progress + " / 100";
     }else if(state == 1){
-        //FIXME need refactor
-        if(!uploading){
-            updateMessage("传输完成");
-            hideMessage();
+        if(currentJob.upload) {
+            message = "正在上传 (服务器带宽有限，需要较长时间，请耐心等待) <img src='/images/icons/ajax_loader.gif'/>";
+        }else{
+            message = "";
+            $("tr[guid='" + currentJob.guid + "'] span").replaceWith("已有");
+            bambook_changed = true;
+            currentJob = null;
+            refreshJobs();
         }
-    }else if(state == 2) {
-        updateMessage("传输失败, 请重试");
-        hideMessage();
+    }else if(state == 2){
+        message = "和Bambook传输失败, 请重试";
     }
+    $("#sidebar div:first h3").html("任务队列 " + message);
 });
 
 addEvent('privbooktransbyrawdata', function(data){
-    popupMessage("正在上传到服务器 (服务器带宽有限，需要较长时间，请耐心等待)");
-    var book = $("tr[guid='" + guid + "']");
     $.post("/books", {
-        sn: sn, 
-        guid: guid,
-        name: book.children()[0].innerHTML,
-        author: book.children()[1].innerHTML,
+        sn: sn,
+        guid: currentJob.guid,
+        name: currentJob.name,
+        author: currentJob.author,
         data: data
     }, function() {
-        updateMessage("上传完毕");
-        $("tr[guid='" + guid + "'] a.upload").replaceWith("已上传");
-        hideMessage();
-        uploading = false;
+        $("#sidebar div:first h3").html("任务队列");
+        $("tr[guid='" + currentJob.guid + "'] span").replaceWith("已上传");
+        currentJob = null;
+        refreshJobs();
     });
+    
 });
 
 $(function() {
@@ -146,11 +185,16 @@ $(function() {
     });
 
     $("#bambook_books a.upload").live('click', function() {
-        //FIXME need refactor
-        uploading = true;
-        guid = $(this).parent().parent().attr("guid");
-        popupMessage("和Bambook通讯中: 0 / 100");
-        bb.fetchPrivBookByRawData(guid);
+        var tr = $(this).parent().parent();
+        var job = {
+            "upload": true,
+            "guid": tr.attr("guid"),
+            "name": tr.children()[0].innerHTML,
+            "author": tr.children()[1].innerHTML
+        };
+        jobs.push(job);
+        refreshJobs();
+        $(this).replaceWith("<span>等待处理</span>");
         return false;
     });
 
@@ -158,36 +202,22 @@ $(function() {
         if(confirm("您确定要在Bambook上删除这本书吗？")) {
             bb.deletePrivBook($(this).parent().parent().attr("guid"));
             $(this).parent().parent().remove();
-            return false;
         }
-    });
-
-    $("#server_books a.download").live('click', function() {
-        popupMessage("正在从服务器下载 (服务器带宽有限，需要较长时间，请耐心等待)");
-        var tr = $(this).parent().parent();
-        $.get("/books/" + tr.attr("sid") + "?sn=" + sn,
-            function(data){
-                bb.replacePrivBookByRawData(tr.attr("guid"), data);
-                $("tr[guid='" + tr.attr("guid") + "'] a.download").replaceWith("已有");
-                bambook_changed = true;
-            });
         return false;
     });
 
-    $("#server_books a.download-share").live('click', function() {
-        if(sn == "") {
-            popupMessage("您需要先连接到Bambook才能下载");
-            hideMessage();
-        }else{
-            popupMessage("正在从服务器下载 (服务器带宽有限，需要较长时间，请耐心等待)");
-            var tr = $(this).parent().parent();
-            $.get("/share_books/" + tr.attr("sid"),
-                function(data){
-                    bb.replacePrivBookByRawData(tr.attr("guid"), data);
-                    $("tr[guid='" + tr.attr("guid") + "'] a.download-share").replaceWith("已有");
-                    bambook_changed = true;
-                });
-        }
+    $("#server_books a.download").live('click', function() {
+        var tr = $(this).parent().parent();
+        var job = {
+            "download": true,
+            "share": $(this).hasClass("share"),
+            "guid": tr.attr("guid"),
+            "sid": tr.attr("sid"),
+            "name": tr.children()[0].innerHTML
+        };
+        jobs.push(job);
+        refreshJobs();
+        $(this).replaceWith("<span>等待处理</span>");
         return false;
     });
 
@@ -201,11 +231,11 @@ $(function() {
                 container.remove();
                 bambook_changed = true;
             });
-            return false;
         }
+        return false;
     });
 
-    $("#server_books a.share").live('click', function() {
+    $("#server_books a.public").live('click', function() {
         var container = $(this).parent().parent();
         $.post("/books/" + container.attr("sid") + "?sn=" + sn, {
             "_method": "put"
@@ -245,6 +275,8 @@ $(function() {
     });
 
     refreshBambookBooks();
+
+    setInterval(processJobs, 1000);
 });
 
 $(window).unload(function() {
