@@ -89,7 +89,7 @@ function connect() {
             refreshBambookBooks();
         }else{
             updateMessage("连接错误: " + result);
-            hideMessage();
+            setTimeout($.unblockUI, 1200);
         }
     }
 }
